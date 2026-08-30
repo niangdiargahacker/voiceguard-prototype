@@ -1,0 +1,6 @@
+# Local-only — never push
+PROJECT_STATUS.md
+CLAUDE.md
+.claude/
+.opencode/
+agents/
