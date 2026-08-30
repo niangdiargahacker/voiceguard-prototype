@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceGuard · Голос.Щит — прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0D12; --surface:#131822; --surface-2:#1B2230; --hairline:#252D3D;
+    --text:#F2F4F8; --muted:#8A93A6; --brand:#5B8CFF;
+    --safe:#34D399; --warn:#FBBF24; --danger:#FF5C5C;
+    --safe-bg:rgba(52,211,153,.12); --warn-bg:rgba(251,191,36,.14); --danger-bg:rgba(255,92,92,.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(91,140,255,.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(255,92,92,.06), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important; transition-duration:.001ms !important;}}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+  header{padding:24px 0 8px;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#8AA9FF);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 20px -6px rgba(91,140,255,.6);}
+  .brand-mark svg{width:18px;height:18px;}
+  .brand-name{font-family:'Unbounded',sans-serif;font-weight:600;font-size:18px;}
+  .brand-sub{color:var(--muted);font-size:12.5px;font-family:'JetBrains Mono',monospace;}
+  .right-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);border:1px solid var(--hairline);padding:6px 12px;border-radius:99px;}
+  .lang-switch{display:flex;gap:4px;background:var(--surface);border:1px solid var(--hairline);border-radius:99px;padding:3px;}
+  .lang-btn{border:none;background:none;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11.5px;
+    padding:6px 12px;border-radius:99px;cursor:pointer;font-weight:600;transition:background .15s,color .15s;}
+  .lang-btn.active{background:var(--brand);color:#fff;}
+  .lang-btn:not(.active):hover{color:var(--text);}
+
+  .hero{padding:48px 0 20px;}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;color:var(--brand);text-transform:uppercase;margin:0 0 14px;}
+  h1{font-family:'Unbounded',sans-serif;font-weight:800;font-size:clamp(28px,4.2vw,46px);line-height:1.1;margin:0 0 18px;letter-spacing:-.01em;max-width:820px;}
+  h1 em{font-style:normal;color:var(--brand);}
+  .lede{color:var(--muted);font-size:16.5px;max-width:640px;margin:0 0 6px;}
+  .note{font-size:13px;color:var(--muted);opacity:.8;margin-top:10px;max-width:640px;}
+
+  .scenario-row{display:flex;gap:10px;margin:26px 0 0;flex-wrap:wrap;}
+  .scenario-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:1px solid var(--hairline);
+    background:var(--surface);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+  .scenario-btn.active{border-color:var(--brand);color:var(--text);background:var(--surface-2);box-shadow:0 0 0 1px var(--brand) inset;}
+  .scenario-btn .emo{font-size:16px;}
+
+  .stage{display:grid;grid-template-columns:340px 1fr;gap:40px;padding:28px 0 50px;align-items:start;}
+  @media (max-width:860px){.stage{grid-template-columns:1fr;}}
+
+  .phone{width:100%;max-width:340px;margin:0 auto;background:linear-gradient(180deg,#12161f,#0d1017);
+    border-radius:38px;border:1px solid var(--hairline);padding:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);position:relative;}
+  .phone-screen{background:var(--surface);border-radius:28px;overflow:hidden;min-height:600px;display:flex;flex-direction:column;position:relative;}
+  .status-bar{display:flex;justify-content:space-between;padding:10px 18px 0;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .call-top{padding:22px 20px 6px;text-align:center;}
+  .avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#2b3549,#171c27);
+    display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--hairline);}
+  .caller-name{font-weight:600;font-size:15.5px;}
+  .caller-sub{color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:2px;}
+  .call-timer{color:var(--muted);font-size:11.5px;font-family:'JetBrains Mono',monospace;margin-top:5px;}
+
+  .waveform{display:flex;align-items:center;justify-content:center;gap:3px;height:26px;margin:8px auto 0;}
+  .waveform .bar{width:3px;border-radius:2px;background:var(--brand);height:5px;transition:height .12s ease, background .3s;}
+
+  .risk-gauge{margin:8px auto 4px;width:140px;position:relative;}
+  .risk-gauge svg{width:100%;display:block;}
+  .risk-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;top:12px;}
+  .risk-num{font-family:'Unbounded',sans-serif;font-weight:800;font-size:24px;line-height:1;}
+  .risk-word{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;margin-top:3px;text-transform:uppercase;}
+
+  .toast{margin:0 14px;padding:9px 12px;border-radius:12px;font-size:11.5px;text-align:left;display:none;align-items:center;gap:8px;
+    background:var(--surface-2);border:1px solid var(--brand);color:var(--text);}
+  .toast.show{display:flex;animation:rise .3s;}
+
+  .transcript{flex:1;margin:6px 14px 0;background:var(--surface-2);border-radius:14px;padding:10px 12px;overflow-y:auto;
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);min-height:120px;max-height:150px;border:1px solid var(--hairline);}
+  .transcript .line{margin-bottom:8px;color:var(--text);opacity:0;transform:translateY(4px);animation:rise .35s forwards;}
+  .transcript .line.flag{color:var(--danger);}
+  .transcript .line.flag-warn{color:var(--warn);}
+  @keyframes rise{to{opacity:1;transform:translateY(0);}}
+  .transcript .tag{display:inline-block;color:var(--muted);font-size:10px;margin-right:6px;}
+
+  .banner{margin:0 14px;padding:9px 12px;border-radius:12px;font-size:12px;text-align:center;font-weight:600;display:none;}
+  .banner.show{display:block;}
+  .banner.warn{background:var(--warn-bg);color:var(--warn);}
+  .banner.danger{background:var(--danger-bg);color:var(--danger);}
+
+  .call-actions{padding:12px 20px 18px;display:flex;flex-direction:column;gap:9px;}
+  .codeword-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;border-radius:14px;border:1px solid var(--hairline);
+    background:var(--surface-2);color:var(--text);font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .15s;}
+  .codeword-btn:hover{border-color:var(--brand);}
+  .codeword-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .row-btns{display:flex;gap:10px;}
+  .btn{flex:1;padding:11px;border-radius:14px;border:none;font-weight:700;font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .1s,filter .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn.start{background:var(--brand);color:#fff;}
+  .btn.reset{background:var(--surface-2);color:var(--text);border:1px solid var(--hairline);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+
+  .steps{padding-top:4px;}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:14px;padding:15px 0;border-top:1px solid var(--hairline);}
+  .step:first-child{border-top:none;}
+  .step-num{font-family:'JetBrains Mono',monospace;color:var(--brand);font-size:13px;padding-top:2px;}
+  .step h3{margin:0 0 6px;font-size:15px;font-weight:700;}
+  .step p{margin:0;color:var(--muted);font-size:13.5px;}
+
+  .debrief{margin-top:18px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--hairline);display:none;}
+  .debrief.show{display:block;}
+  .debrief h4{margin:0 0 10px;font-family:'Unbounded',sans-serif;font-size:14.5px;}
+  .debrief ul{margin:0;padding-left:18px;color:var(--muted);font-size:13px;}
+  .debrief li{margin-bottom:6px;}
+  .debrief li b{color:var(--text);}
+
+  section.block{padding:20px 0 60px;border-top:1px solid var(--hairline);}
+  .block-head{padding:40px 0 20px;max-width:680px;}
+  .block-head .eyebrow{margin-bottom:8px;}
+  .block-head h2{font-family:'Unbounded',sans-serif;font-size:clamp(20px,2.8vw,27px);margin:0 0 10px;font-weight:800;}
+  .block-head p{color:var(--muted);font-size:14.5px;margin:0;}
+
+  .history-list{display:flex;flex-direction:column;gap:8px;}
+  .history-empty{color:var(--muted);font-size:13.5px;padding:20px;text-align:center;background:var(--surface);border-radius:14px;border:1px dashed var(--hairline);}
+  .history-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--hairline);}
+  .history-row.danger{border-left-color:var(--danger);}
+  .history-row.warn{border-left-color:var(--warn);}
+  .history-row.safe{border-left-color:var(--safe);}
+  .history-row .h-score{font-family:'Unbounded',sans-serif;font-weight:800;font-size:16px;width:52px;flex-shrink:0;}
+  .history-row .h-body{flex:1;}
+  .history-row .h-title{font-size:13px;font-weight:600;}
+  .history-row .h-sub{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px;}
+  .clear-history{font-size:11.5px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;margin-top:12px;font-family:'Inter',sans-serif;}
+
+  .contacts-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;}
+  @media (max-width:860px){.contacts-grid{grid-template-columns:1fr;}}
+  .contact-form{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:20px;}
+  .contact-form label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'JetBrains Mono',monospace;}
+  .contact-form input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);
+    font-size:13.5px;margin-bottom:10px;font-family:'Inter',sans-serif;}
+  .contact-form input:focus{outline:2px solid var(--brand);outline-offset:1px;}
+  .contact-form button{width:100%;padding:10px;border-radius:10px;border:none;background:var(--brand);color:#fff;font-weight:700;font-size:12.5px;cursor:pointer;}
+  .contact-list{display:flex;flex-direction:column;gap:8px;}
+  .contact-chip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--hairline);}
+  .contact-chip .c-avatar{width:36px;height:36px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;
+    font-family:'Unbounded',sans-serif;font-weight:700;font-size:13px;flex-shrink:0;}
+  .contact-chip .c-info{flex:1;}
+  .contact-chip .c-name{font-size:13px;font-weight:600;}
+  .contact-chip .c-phone{font-size:11.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .contact-chip .c-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px 8px;}
+  .contact-chip .c-remove:hover{color:var(--danger);}
+  .contact-empty{color:var(--muted);font-size:13px;padding:16px;text-align:center;}
+
+  .analyzer-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media (max-width:860px){.analyzer-grid{grid-template-columns:1fr;}}
+  textarea{width:100%;min-height:200px;background:var(--surface);color:var(--text);border:1px solid var(--hairline);border-radius:16px;
+    padding:16px;font-size:14px;font-family:'Inter',sans-serif;resize:vertical;line-height:1.6;}
+  textarea:focus{outline:2px solid var(--brand);outline-offset:2px;}
+  .analyze-btn{margin-top:12px;padding:12px 20px;border-radius:12px;border:none;background:var(--brand);color:#fff;font-weight:700;
+    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;}
+  .analyze-btn:hover{filter:brightness(1.08);}
+  .sample-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .sample-chip{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);border:1px solid var(--hairline);
+    padding:6px 10px;border-radius:99px;cursor:pointer;background:none;}
+  .sample-chip:hover{color:var(--text);border-color:var(--brand);}
+  .result-card{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:20px;min-height:210px;}
+  .result-empty{color:var(--muted);font-size:13.5px;display:flex;align-items:center;height:100%;min-height:170px;}
+  .result-top{display:flex;align-items:center;gap:16px;margin-bottom:14px;}
+  .score-ring{position:relative;width:72px;height:72px;flex-shrink:0;}
+  .score-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .score-ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-weight:800;font-size:16px;}
+  .result-verdict{font-weight:700;font-size:14px;}
+  .result-sub{color:var(--muted);font-size:11.5px;margin-top:3px;font-family:'JetBrains Mono',monospace;}
+  .flags{display:flex;flex-direction:column;gap:7px;}
+  .flag-item{display:flex;gap:9px;padding:9px 11px;border-radius:10px;background:var(--surface-2);font-size:12px;border-left:3px solid var(--hairline);}
+  .flag-item.hit{border-left-color:var(--danger);}
+  .flag-item .body b{display:block;font-size:11.5px;}
+  .flag-item .body span{color:var(--muted);font-size:11px;}
+
+  .cw-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;}
+  @media (max-width:860px){.cw-grid{grid-template-columns:1fr;}}
+  .cw-card{background:var(--surface);border:1px solid var(--hairline);border-radius:16px;padding:20px;}
+  .cw-card label{display:block;font-size:12px;color:var(--muted);margin-bottom:8px;font-family:'JetBrains Mono',monospace;}
+  .cw-card input{width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);
+    font-size:13.5px;margin-bottom:10px;font-family:'Inter',sans-serif;}
+  .cw-card input:focus{outline:2px solid var(--brand);outline-offset:1px;}
+  .cw-btn{padding:11px 16px;border-radius:10px;border:1px solid var(--hairline);background:var(--surface-2);color:var(--text);font-weight:600;font-size:12.5px;cursor:pointer;width:100%;}
+  .cw-btn.primary{background:var(--brand);color:#fff;border:none;}
+  .cw-result{margin-top:12px;font-size:12.5px;font-weight:600;min-height:20px;}
+  .cw-result.ok{color:var(--safe);}
+  .cw-result.bad{color:var(--danger);}
+
+  footer{padding:26px 0 44px;border-top:1px solid var(--hairline);color:var(--muted);font-size:12px;}
+
+  .arch-diagram{display:flex;align-items:stretch;gap:10px;overflow-x:auto;padding:6px 2px 18px;}
+  .arch-node{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:16px 14px;
+    min-width:150px;max-width:170px;flex-shrink:0;text-align:center;}
+  .arch-node.arch-start,.arch-node.arch-end{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset;}
+  .arch-node.small{min-width:140px;max-width:150px;padding:12px 10px;}
+  .arch-split{display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+  .arch-icon{font-size:22px;margin-bottom:8px;}
+  .arch-node-title{font-size:12.5px;font-weight:700;margin-bottom:5px;line-height:1.25;}
+  .arch-node-desc{font-size:10.5px;color:var(--muted);line-height:1.35;}
+  .arch-arrow{display:flex;align-items:center;justify-content:center;color:var(--hairline);font-size:20px;flex-shrink:0;min-width:20px;}
+  .arch-note{font-size:12px;color:var(--muted);font-style:italic;border-top:1px dashed var(--hairline);padding-top:14px;max-width:760px;}
+  @media (max-width:860px){
+    .arch-diagram{flex-direction:column;align-items:stretch;}
+    .arch-node,.arch-node.small{max-width:100%;}
+    .arch-arrow{transform:rotate(90deg);padding:2px 0;}
+    .arch-split{flex-direction:row;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand-row">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V5l-8-3z" stroke="#0A0D12" stroke-width="1.6" fill="#0A0D12" fill-opacity=".15"/><path d="M8.5 12.2l2.3 2.3 4.7-4.9" stroke="#0A0D12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">VoiceGuard</div>
+          <div class="brand-sub" data-i18n="brandSub">prototype fonctionnel v0.2</div>
+        </div>
+      </div>
+      <div class="right-controls">
+        <div class="pill" data-i18n="pillTrack">Sécurité financière · piste « Outil »</div>
+        <div class="lang-switch">
+          <button class="lang-btn" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="ru">RU</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow" data-i18n="heroEyebrow">Démonstration en temps réel</p>
+    <h1 id="heroTitle"></h1>
+    <p class="lede" data-i18n="heroLede">texte</p>
+    <p class="note" data-i18n="heroNote">texte</p>
+
+    <div class="scenario-row">
+      <button class="scenario-btn active" data-scenario="bank"><span class="emo">🏦</span><span data-i18n="scenarioBank">Faux banquier</span></button>
+      <button class="scenario-btn" data-scenario="relative"><span class="emo">👨‍👩‍👧</span><span data-i18n="scenarioRelative">Faux proche en détresse</span></button>
+    </div>
+  </section>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="phone-screen">
+        <div class="status-bar"><span>21:14</span><span id="statusActive" data-i18n="statusActive">●●● VoiceGuard actif</span></div>
+        <div class="call-top">
+          <div class="avatar" id="avatarLetter">?</div>
+          <div class="caller-name" id="callerName" data-i18n="callerDefault">Numéro inconnu</div>
+          <div class="caller-sub" id="callerSub">—</div>
+          <div class="call-timer" id="callTimer">00:00</div>
+        </div>
+
+        <div class="waveform" id="waveform"></div>
+
+        <div class="risk-gauge">
+          <svg viewBox="0 0 150 90">
+            <path d="M15 80 A60 60 0 0 1 135 80" fill="none" stroke="#252D3D" stroke-width="10" stroke-linecap="round"/>
+            <path id="gaugeArc" d="M15 80 A60 60 0 0 1 135 80" fill="none" stroke="#34D399" stroke-width="10" stroke-linecap="round"
+                  stroke-dasharray="188.4" stroke-dashoffset="188.4"/>
+          </svg>
+          <div class="risk-label">
+            <div class="risk-num" id="riskNum">0%</div>
+            <div class="risk-word" id="riskWord" data-i18n="riskCalm">calme</div>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+        <div class="banner" id="banner"></div>
+        <div class="transcript" id="transcript"></div>
+
+        <div class="call-actions">
+          <button class="codeword-btn" id="codewordBtn" disabled data-i18n="codewordBtn">🔑 Demander le mot de code familial</button>
+          <div class="row-btns">
+            <button class="btn start" id="startBtn" data-i18n="startBtn">Démarrer l'appel</button>
+            <button class="btn reset" id="resetBtn" data-i18n="resetBtn">Réinitialiser</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="steps-wrap">
+      <div class="steps" id="stepsList"></div>
+      <div class="debrief" id="debrief">
+        <h4 data-i18n="debriefTitle">Bilan de l'appel</h4>
+        <ul id="debriefList"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="block" id="archSection">
+  <div class="wrap">
+    <div class="block-head">
+      <p class="eyebrow" data-i18n="archEyebrow">Sous le capot</p>
+      <h2 data-i18n="archTitle">Comment fonctionne la détection</h2>
+      <p data-i18n="archDesc">Une architecture à deux moteurs...</p>
+    </div>
+    <div class="arch-diagram">
+      <div class="arch-node arch-start">
+        <div class="arch-icon">🎙️</div>
+        <div class="arch-node-title" data-i18n="archStep1Title">Flux audio</div>
+        <div class="arch-node-desc" data-i18n="archStep1Desc">...</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">📱</div>
+        <div class="arch-node-title" data-i18n="archStep2Title">Traitement local</div>
+        <div class="arch-node-desc" data-i18n="archStep2Desc">...</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-split">
+        <div class="arch-node small">
+          <div class="arch-icon">🔊</div>
+          <div class="arch-node-title" data-i18n="archStep3aTitle">Moteur vocal</div>
+          <div class="arch-node-desc" data-i18n="archStep3aDesc">...</div>
+        </div>
+        <div class="arch-node small">
+          <div class="arch-icon">💬</div>
+          <div class="arch-node-title" data-i18n="archStep3bTitle">Moteur NLP</div>
+          <div class="arch-node-desc" data-i18n="archStep3bDesc">...</div>
+        </div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">⚖️</div>
+        <div class="arch-node-title" data-i18n="archStep4Title">Fusion du score</div>
+        <div class="arch-node-desc" data-i18n="archStep4Desc">...</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node arch-end">
+        <div class="arch-icon">🚨</div>
+        <div class="arch-node-title" data-i18n="archStep5Title">Action visible</div>
+        <div class="arch-node-desc" data-i18n="archStep5Desc">...</div>
+      </div>
+    </div>
+    <p class="arch-note" data-i18n="archNote">...</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head">
+      <p class="eyebrow" data-i18n="historyEyebrow">Historique de session</p>
+      <h2 data-i18n="historyTitle">Appels analysés</h2>
+      <p data-i18n="historyDesc">Chaque appel simulé est enregistré ici, comme dans le vrai journal de l'application.</p>
+    </div>
+    <div class="history-list" id="historyList"></div>
+    <button class="clear-history" id="clearHistoryBtn" data-i18n="clearHistory">Effacer l'historique</button>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head">
+      <p class="eyebrow" data-i18n="contactsEyebrow">Configuration</p>
+      <h2 data-i18n="contactsTitle">Contacts de confiance</h2>
+      <p data-i18n="contactsDesc">En cas de risque élevé, VoiceGuard peut alerter discrètement un proche désigné pendant l'appel.</p>
+    </div>
+    <div class="contacts-grid">
+      <div class="contact-form">
+        <label data-i18n="contactNameLabel">Nom du contact</label>
+        <input type="text" id="contactName" placeholder="—">
+        <label data-i18n="contactPhoneLabel">Téléphone</label>
+        <input type="text" id="contactPhone" placeholder="—">
+        <button id="addContactBtn" data-i18n="contactAddBtn">Ajouter le contact</button>
+      </div>
+      <div class="contact-list" id="contactList"></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head">
+      <p class="eyebrow" data-i18n="analyzerEyebrow">Fonctionne pour de vrai</p>
+      <h2 data-i18n="analyzerTitle">Analyseur de risque : collez un texte</h2>
+      <p data-i18n="analyzerDesc">Logique réelle, exécutée dans votre navigateur — reconnaît les schémas en français, anglais et russe.</p>
+    </div>
+    <div class="analyzer-grid">
+      <div>
+        <textarea id="userText" data-i18n-ph="textareaPlaceholder" placeholder="…"></textarea>
+        <div class="sample-row">
+          <button class="sample-chip" data-sample="scam" data-i18n="sampleScam">exemple : fraudeur</button>
+          <button class="sample-chip" data-sample="courier" data-i18n="sampleCourier">exemple : livreur</button>
+          <button class="sample-chip" data-sample="safe" data-i18n="sampleSafe">exemple : appel normal</button>
+        </div>
+        <br>
+        <button class="analyze-btn" id="analyzeBtn" data-i18n="analyzeBtn">Analyser le texte</button>
+      </div>
+      <div class="result-card" id="resultCard"><div class="result-empty" data-i18n="resultEmpty">Le résultat apparaîtra ici →</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head" style="padding-bottom:20px;">
+      <p class="eyebrow" data-i18n="cwEyebrow">Mini-démo</p>
+      <h2 data-i18n="cwTitle">Mot de code familial</h2>
+      <p data-i18n="cwDesc">Définissez un mot, puis vérifiez si la réponse correspond.</p>
+    </div>
+    <div class="cw-grid">
+      <div class="cw-card">
+        <label data-i18n="cwStep1">Étape 1 — définissez le mot</label>
+        <input type="text" id="cwSet" data-i18n-ph="cwSetPh" placeholder="…">
+        <button class="cw-btn primary" id="cwSaveBtn" data-i18n="cwSaveBtn">Enregistrer</button>
+        <div class="cw-result" id="cwSaveResult"></div>
+      </div>
+      <div class="cw-card">
+        <label data-i18n="cwStep2">Étape 2 — réponse de l'appelant</label>
+        <input type="text" id="cwCheck" data-i18n-ph="cwCheckPh" placeholder="…">
+        <button class="cw-btn" id="cwCheckBtn" data-i18n="cwCheckBtn">Vérifier</button>
+        <div class="cw-result" id="cwCheckResult"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="wrap" id="footerText"></div></footer>
+
+<script>
+/* ======================= I18N ======================= */
+const I18N = {
+  fr: {
+    brandSub: "prototype fonctionnel v0.2",
+    pillTrack: "Sécurité financière · piste « Outil »",
+    heroEyebrow: "Démonstration en temps réel",
+    heroTitle: "L'appli entend la <em>manipulation</em>, pas seulement les mots.",
+    heroLede: "Un appel de fraudeur simulé avec indicateur de risque en direct, et un analyseur qui calcule réellement un score pour tout texte collé.",
+    heroNote: "L'appel simulé est scénarisé. L'analyseur de texte, le mot de code et l'historique fonctionnent réellement dans votre navigateur.",
+    scenarioBank: "Faux banquier",
+    scenarioRelative: "Faux proche en détresse",
+    statusActive: "●●● VoiceGuard actif",
+    callerDefault: "Numéro inconnu",
+    riskCalm: "calme", riskCaution: "prudence", riskDanger: "danger",
+    bannerWarn: "Vigilance accrue",
+    bannerDanger: "⚠ Risque élevé de fraude",
+    toastNotified: "🔔 {name} a été alerté(e) discrètement",
+    toastNotifiedGeneric: "🔔 Votre contact de confiance a été alerté(e) discrètement",
+    codewordBtn: "🔑 Demander le mot de code familial",
+    startBtn: "Démarrer l'appel",
+    resetBtn: "Réinitialiser",
+    step1Title: "L'appel commence", step1Desc: "VoiceGuard analyse la voix et le contenu, sans que l'interlocuteur ne s'en aperçoive.",
+    step2Title: "Le risque monte en temps réel", step2Desc: "Chaque signal de manipulation fait monter l'indicateur, visible pendant l'appel.",
+    step3Title: "Le mot de code comme vérification", step3Desc: "En cas de risque élevé, l'appli suggère de demander le mot de code familial.",
+    step4Title: "Le bilan après l'appel", step4Desc: "Une explication claire de ce qui a alerté le système — couche pédagogique, pas la base du produit.",
+    debriefTitle: "Bilan de l'appel",
+    historyEyebrow: "Historique de session",
+    historyTitle: "Appels analysés",
+    historyDesc: "Chaque appel simulé est enregistré ici, comme dans le vrai journal de l'application.",
+    historyEmpty: "Aucun appel analysé pour l'instant — lancez une simulation ci-dessus.",
+    clearHistory: "Effacer l'historique",
+    hScenarioBank: "Scénario : faux banquier",
+    hScenarioRelative: "Scénario : faux proche en détresse",
+    hVerdictSafe: "Aucun signal détecté", hVerdictWarn: "Signaux suspects", hVerdictDanger: "Fraude probable",
+    contactsEyebrow: "Configuration",
+    contactsTitle: "Contacts de confiance",
+    contactsDesc: "En cas de risque élevé, VoiceGuard peut alerter discrètement un proche désigné pendant l'appel.",
+    contactNameLabel: "Nom du contact",
+    contactPhoneLabel: "Téléphone",
+    contactAddBtn: "Ajouter le contact",
+    contactEmpty: "Aucun contact ajouté — un libellé générique sera utilisé lors des alertes.",
+    contactRemove: "Retirer",
+    analyzerEyebrow: "Fonctionne pour de vrai",
+    analyzerTitle: "Analyseur de risque : collez un texte",
+    analyzerDesc: "Logique réelle, exécutée dans votre navigateur — reconnaît les schémas en français, anglais et russe.",
+    textareaPlaceholder: "Par exemple : « Bonjour, ici la sécurité de votre banque. N'en parlez à personne et communiquez-moi le code reçu par SMS... »",
+    sampleScam: "exemple : fraudeur", sampleCourier: "exemple : livreur", sampleSafe: "exemple : appel normal",
+    analyzeBtn: "Analyser le texte",
+    resultEmpty: "Collez un texte puis cliquez sur « Analyser le texte ».",
+    verdictSafe: "Aucun signal de fraude détecté", verdictWarn: "Signaux suspects présents", verdictDanger: "Forte probabilité de fraude",
+    subSafe: "risque faible", subWarn: "risque moyen", subDanger: "risque élevé",
+    flagUrgencyLabel: "Urgence artificielle",
+    flagSecrecyLabel: "Exigence de secret",
+    flagAuthorityLabel: "Fausse autorité",
+    flagCredentialsLabel: "Demande de code / données carte",
+    detected: "détecté", notDetected: "non détecté",
+    signalsOf: "signaux",
+    cwEyebrow: "Mini-démo",
+    cwTitle: "Mot de code familial",
+    cwDesc: "Définissez un mot, puis vérifiez si la réponse correspond.",
+    cwStep1: "Étape 1 — définissez le mot", cwSetPh: "Entrez un mot secret", cwSaveBtn: "Enregistrer",
+    cwStep2: "Étape 2 — réponse de l'appelant", cwCheckPh: "Entrez la réponse", cwCheckBtn: "Vérifier",
+    cwSaved: "Mot de code enregistré ✓", cwEmptyErr: "Entrez un mot.",
+    cwNoWord: "Définissez d'abord un mot de code.",
+    cwMatch: "Ça correspond — probablement votre proche.",
+    cwNoMatch: "Ça ne correspond pas — risque élevé d'usurpation.",
+    footer: "VoiceGuard — prototype pour le concours « Financial Security Team Project Contest ». Aucune donnée n'est envoyée : tout s'exécute localement dans le navigateur.",
+    debriefAuthority: "L'appelant a prétendu représenter une autorité (banque, police) — celles-ci ne demandent jamais de code par téléphone.",
+    debriefTransfer: "La demande de code ou de transfert est le signal numéro un de la fraude.",
+    debriefSecrecy: "La demande de garder le secret vise à isoler la victime de toute aide extérieure.",
+    debriefUrgency: "La pression artificielle du temps empêche de réfléchir posément.",
+    archEyebrow: "Sous le capot",
+    archTitle: "Comment fonctionne la détection",
+    archDesc: "Une architecture à deux moteurs qui tournent en parallèle, entièrement sur l'appareil — aucune donnée vocale n'est envoyée à un serveur externe.",
+    archStep1Title: "Flux audio de l'appel",
+    archStep1Desc: "Le microphone capte la conversation en direct, uniquement pendant les appels que l'utilisateur choisit de faire analyser.",
+    archStep2Title: "Traitement local sur l'appareil",
+    archStep2Desc: "Aucun envoi vers un serveur : le traitement du son se fait directement sur le téléphone, pour la confidentialité et la rapidité.",
+    archStep3aTitle: "Moteur vocal",
+    archStep3aDesc: "Recherche d'artefacts de synthèse IA et comparaison avec les empreintes vocales enregistrées des proches.",
+    archStep3bTitle: "Moteur linguistique (NLP)",
+    archStep3bDesc: "Détecte les schémas d'ingénierie sociale : urgence, secret, autorité usurpée, demande de code.",
+    archStep4Title: "Fusion du score de risque",
+    archStep4Desc: "Les deux moteurs combinent leurs résultats en un seul indicateur simple, mis à jour en continu pendant l'appel.",
+    archStep5Title: "Action visible pour l'utilisateur",
+    archStep5Desc: "Indicateur à l'écran, suggestion du mot de code, et alerte optionnelle à un proche si le risque reste élevé.",
+    archNote: "Sur ce prototype, le moteur vocal et le NLP sont simulés pour la démonstration ; l'architecture et la logique de fusion du risque, elles, sont réelles et fonctionnelles.",
+  },
+  en: {
+    brandSub: "functional prototype v0.2",
+    pillTrack: "Financial security · \"Tool\" track",
+    heroEyebrow: "Real-time demonstration",
+    heroTitle: "The app hears the <em>manipulation</em>, not just the words.",
+    heroLede: "A simulated scam call with a live risk indicator, plus an analyzer that genuinely scores any text you paste.",
+    heroNote: "The simulated call is scripted. The text analyzer, code word check, and call history all work for real in your browser.",
+    scenarioBank: "Fake bank officer",
+    scenarioRelative: "Fake relative in distress",
+    statusActive: "●●● VoiceGuard active",
+    callerDefault: "Unknown number",
+    riskCalm: "calm", riskCaution: "caution", riskDanger: "danger",
+    bannerWarn: "Increased vigilance",
+    bannerDanger: "⚠ High fraud risk",
+    toastNotified: "🔔 {name} was discreetly notified",
+    toastNotifiedGeneric: "🔔 Your trusted contact was discreetly notified",
+    codewordBtn: "🔑 Ask for the family code word",
+    startBtn: "Start the call",
+    resetBtn: "Reset",
+    step1Title: "The call begins", step1Desc: "VoiceGuard analyzes voice and content, unnoticed by the caller.",
+    step2Title: "Risk rises in real time", step2Desc: "Each manipulation signal raises the indicator, visible during the call.",
+    step3Title: "The code word as a check", step3Desc: "At high risk, the app suggests asking for the family code word.",
+    step4Title: "The post-call debrief", step4Desc: "A clear explanation of what triggered the alert — a learning layer, not the product's core.",
+    debriefTitle: "Call debrief",
+    historyEyebrow: "Session history",
+    historyTitle: "Analyzed calls",
+    historyDesc: "Every simulated call is logged here, like a real app's call history.",
+    historyEmpty: "No call analyzed yet — run a simulation above.",
+    clearHistory: "Clear history",
+    hScenarioBank: "Scenario: fake bank officer",
+    hScenarioRelative: "Scenario: fake relative in distress",
+    hVerdictSafe: "No signal detected", hVerdictWarn: "Suspicious signals", hVerdictDanger: "Likely fraud",
+    contactsEyebrow: "Setup",
+    contactsTitle: "Trusted contacts",
+    contactsDesc: "At high risk, VoiceGuard can discreetly notify a designated relative during the call.",
+    contactNameLabel: "Contact name",
+    contactPhoneLabel: "Phone number",
+    contactAddBtn: "Add contact",
+    contactEmpty: "No contact added yet — a generic label will be used for alerts.",
+    contactRemove: "Remove",
+    analyzerEyebrow: "Actually works",
+    analyzerTitle: "Risk analyzer: paste any text",
+    analyzerDesc: "Real logic running in your browser — recognizes patterns in French, English, and Russian.",
+    textareaPlaceholder: "For example: \"Hello, this is your bank's security team. Don't tell anyone and give me the code you received by SMS...\"",
+    sampleScam: "example: scammer", sampleCourier: "example: delivery courier", sampleSafe: "example: normal call",
+    analyzeBtn: "Analyze text",
+    resultEmpty: "Paste a text then click \"Analyze text\".",
+    verdictSafe: "No fraud signal detected", verdictWarn: "Suspicious signals present", verdictDanger: "High probability of fraud",
+    subSafe: "low risk", subWarn: "medium risk", subDanger: "high risk",
+    flagUrgencyLabel: "Artificial urgency",
+    flagSecrecyLabel: "Demand for secrecy",
+    flagAuthorityLabel: "False authority",
+    flagCredentialsLabel: "Request for code / card details",
+    detected: "detected", notDetected: "not detected",
+    signalsOf: "signals",
+    cwEyebrow: "Mini demo",
+    cwTitle: "Family code word",
+    cwDesc: "Set a word, then check whether the reply matches.",
+    cwStep1: "Step 1 — set the word", cwSetPh: "Enter a secret word", cwSaveBtn: "Save",
+    cwStep2: "Step 2 — caller's reply", cwCheckPh: "Enter the reply", cwCheckBtn: "Check",
+    cwSaved: "Code word saved ✓", cwEmptyErr: "Enter a word.",
+    cwNoWord: "Set a code word first.",
+    cwMatch: "It matches — likely your relative.",
+    cwNoMatch: "It doesn't match — high risk of impersonation.",
+    footer: "VoiceGuard — prototype for the \"Financial Security Team Project Contest\". No data is sent anywhere: everything runs locally in the browser.",
+    debriefAuthority: "The caller claimed to represent an authority (bank, police) — these never ask for a code over the phone.",
+    debriefTransfer: "A request for a code or transfer is the number-one fraud red flag.",
+    debriefSecrecy: "The demand for secrecy aims to isolate the victim from outside help.",
+    debriefUrgency: "Artificial time pressure prevents calm, clear thinking.",
+    archEyebrow: "Under the hood",
+    archTitle: "How the detection works",
+    archDesc: "A two-engine architecture running in parallel, entirely on-device — no voice data is ever sent to an external server.",
+    archStep1Title: "Call audio stream",
+    archStep1Desc: "The microphone captures the live conversation, only for calls the user chooses to have analyzed.",
+    archStep2Title: "On-device local processing",
+    archStep2Desc: "No server upload: audio processing happens directly on the phone, for privacy and speed.",
+    archStep3aTitle: "Voice engine",
+    archStep3aDesc: "Looks for AI-synthesis artifacts and compares against saved voiceprints of relatives.",
+    archStep3bTitle: "Language engine (NLP)",
+    archStep3bDesc: "Detects social-engineering patterns: urgency, secrecy, impersonated authority, code requests.",
+    archStep4Title: "Risk score fusion",
+    archStep4Desc: "Both engines combine their outputs into one simple indicator, updated continuously during the call.",
+    archStep5Title: "Visible action for the user",
+    archStep5Desc: "On-screen indicator, code-word suggestion, and an optional alert to a relative if risk stays high.",
+    archNote: "In this prototype, the voice and NLP engines are simulated for demonstration; the architecture and risk-fusion logic are real and functional.",
+  },
+  ru: {
+    brandSub: "рабочий прототип v0.2",
+    pillTrack: "Финансовая безопасность · трек «Инструмент»",
+    heroEyebrow: "Демонстрация в реальном времени",
+    heroTitle: "Приложение слышит <em>манипуляцию</em>, а не только слова.",
+    heroLede: "Смоделированный звонок мошенника с живым индикатором риска и анализатор, который по-настоящему считает риск для любого текста.",
+    heroNote: "Звонок ниже — срежиссированный сценарий. Анализатор текста, кодовое слово и история звонков работают по-настоящему в браузере.",
+    scenarioBank: "Фальшивый банкир",
+    scenarioRelative: "Фальшивый близкий в беде",
+    statusActive: "●●● VoiceGuard активен",
+    callerDefault: "Неизвестный номер",
+    riskCalm: "спокойно", riskCaution: "настороже", riskDanger: "опасно",
+    bannerWarn: "Повышенная бдительность",
+    bannerDanger: "⚠ Высокий риск мошенничества",
+    toastNotified: "🔔 {name} незаметно уведомлён(а)",
+    toastNotifiedGeneric: "🔔 Ваш доверенный контакт незаметно уведомлён",
+    codewordBtn: "🔑 Спросить кодовое слово семьи",
+    startBtn: "Начать звонок",
+    resetBtn: "Сбросить",
+    step1Title: "Звонок начинается", step1Desc: "VoiceGuard анализирует голос и содержание — незаметно для собеседника.",
+    step2Title: "Риск растёт в реальном времени", step2Desc: "Каждый признак манипуляции поднимает индикатор во время звонка.",
+    step3Title: "Кодовое слово как проверка", step3Desc: "При высоком риске приложение предлагает спросить кодовое слово семьи.",
+    step4Title: "Разбор после звонка", step4Desc: "Понятное объяснение, что насторожило систему — обучающий слой, а не основа продукта.",
+    debriefTitle: "Разбор звонка",
+    historyEyebrow: "История сессии",
+    historyTitle: "Проанализированные звонки",
+    historyDesc: "Каждый смоделированный звонок сохраняется здесь — как в настоящем журнале приложения.",
+    historyEmpty: "Пока нет проанализированных звонков — запустите симуляцию выше.",
+    clearHistory: "Очистить историю",
+    hScenarioBank: "Сценарий: фальшивый банкир",
+    hScenarioRelative: "Сценарий: фальшивый близкий в беде",
+    hVerdictSafe: "Признаков не обнаружено", hVerdictWarn: "Подозрительные признаки", hVerdictDanger: "Вероятное мошенничество",
+    contactsEyebrow: "Настройка",
+    contactsTitle: "Доверенные контакты",
+    contactsDesc: "При высоком риске VoiceGuard может незаметно уведомить назначенного близкого во время звонка.",
+    contactNameLabel: "Имя контакта",
+    contactPhoneLabel: "Телефон",
+    contactAddBtn: "Добавить контакт",
+    contactEmpty: "Контакты ещё не добавлены — будет использована общая формулировка.",
+    contactRemove: "Удалить",
+    analyzerEyebrow: "Работает по-настоящему",
+    analyzerTitle: "Анализатор риска: вставьте текст",
+    analyzerDesc: "Реальная логика в браузере — распознаёт схемы на русском, французском и английском языках.",
+    textareaPlaceholder: "Например: «Здравствуйте, это служба безопасности банка. Никому не говорите и назовите код из смс...»",
+    sampleScam: "пример: мошенник", sampleCourier: "пример: курьер", sampleSafe: "пример: обычный звонок",
+    analyzeBtn: "Проверить текст",
+    resultEmpty: "Вставьте текст и нажмите «Проверить текст».",
+    verdictSafe: "Признаков мошенничества не обнаружено", verdictWarn: "Есть подозрительные признаки", verdictDanger: "Высокая вероятность мошенничества",
+    subSafe: "низкий риск", subWarn: "средний риск", subDanger: "высокий риск",
+    flagUrgencyLabel: "Искусственная срочность",
+    flagSecrecyLabel: "Требование секретности",
+    flagAuthorityLabel: "Ложная авторитетность",
+    flagCredentialsLabel: "Запрос кода / данных карты",
+    detected: "найдено", notDetected: "не обнаружено",
+    signalsOf: "признаков",
+    cwEyebrow: "Мини-демо",
+    cwTitle: "Кодовое слово семьи",
+    cwDesc: "Задайте слово, затем проверьте, совпадает ли ответ.",
+    cwStep1: "Шаг 1 — задайте слово", cwSetPh: "Введите секретное слово", cwSaveBtn: "Сохранить",
+    cwStep2: "Шаг 2 — ответ звонящего", cwCheckPh: "Введите ответ", cwCheckBtn: "Проверить",
+    cwSaved: "Кодовое слово сохранено ✓", cwEmptyErr: "Введите слово.",
+    cwNoWord: "Сначала задайте кодовое слово.",
+    cwMatch: "Совпадает — вероятно, это ваш близкий.",
+    cwNoMatch: "Не совпадает — высокий риск подмены.",
+    footer: "VoiceGuard — прототип для конкурса «Financial Security Team Project Contest». Данные никуда не передаются: всё выполняется локально в браузере.",
+    debriefAuthority: "Звонящий представился представителем власти (банк, полиция) — они никогда не запрашивают код по телефону.",
+    debriefTransfer: "Запрос кода или перевода — главный признак мошенничества.",
+    debriefSecrecy: "Требование хранить тайну направлено на изоляцию жертвы от посторонней помощи.",
+    debriefUrgency: "Искусственное давление времени мешает спокойно подумать.",
+    archEyebrow: "Как это устроено",
+    archTitle: "Как работает детекция",
+    archDesc: "Архитектура из двух параллельных модулей, работающих полностью на устройстве — голосовые данные никогда не отправляются на внешний сервер.",
+    archStep1Title: "Аудиопоток звонка",
+    archStep1Desc: "Микрофон захватывает разговор в реальном времени — только для звонков, которые пользователь решил анализировать.",
+    archStep2Title: "Локальная обработка на устройстве",
+    archStep2Desc: "Без отправки на сервер: обработка звука происходит прямо на телефоне — ради конфиденциальности и скорости.",
+    archStep3aTitle: "Голосовой модуль",
+    archStep3aDesc: "Поиск артефактов ИИ-синтеза и сравнение с сохранёнными голосовыми образцами близких.",
+    archStep3bTitle: "Языковой модуль (NLP)",
+    archStep3bDesc: "Обнаруживает схемы социальной инженерии: срочность, секретность, ложную авторитетность, запрос кода.",
+    archStep4Title: "Слияние оценки риска",
+    archStep4Desc: "Оба модуля объединяют результаты в единый простой индикатор, обновляемый непрерывно во время звонка.",
+    archStep5Title: "Понятное действие для пользователя",
+    archStep5Desc: "Индикатор на экране, предложение назвать кодовое слово и опциональное уведомление близкого при высоком риске.",
+    archNote: "В этом прототипе голосовой и NLP-модули смоделированы для демонстрации; архитектура и логика слияния риска — реальны и работают по-настоящему.",
+  }
+};
+
+let currentLang = "fr";
+let currentScenario = "bank";
+const el = id => document.getElementById(id);
+function t(key){ return (I18N[currentLang] && I18N[currentLang][key]) || key; }
+
+/* ===== Call scripts per language & scenario ===== */
+const CALLER_INFO = {
+  fr: { bank: { name: "« Employé de banque »", sub: "+33 1 23 45 67 89", emo: "🏦" }, relative: { name: "« Votre enfant »", sub: "Numéro masqué", emo: "👤" } },
+  en: { bank: { name: "\"Bank officer\"", sub: "+1 202 555 0142", emo: "🏦" }, relative: { name: "\"Your child\"", sub: "Hidden number", emo: "👤" } },
+  ru: { bank: { name: "«Сотрудник банка»", sub: "+7 958 123-45-67", emo: "🏦" }, relative: { name: "«Ваш ребёнок»", sub: "Скрытый номер", emo: "👤" } },
+};
+
+const SPEAKER = { fr: "Fraudeur", en: "Scammer", ru: "Мошенник" };
+
+const SCRIPTS = {
+  fr: {
+    bank: [
+      {t:800, text:"Bonjour ! Ici la sécurité de votre banque.", delta:15, cls:"flag-warn", flagKey:"authority"},
+      {t:2500, text:"Nous avons détecté une opération suspecte sur votre carte.", delta:10, cls:"", flagKey:"authority"},
+      {t:2500, text:"Pour l'annuler, donnez-moi le code que vous allez recevoir par SMS.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"S'il vous plaît, n'en parlez à personne — c'est confidentiel.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"Si vous ne faites pas vite, vos fonds seront bloqués définitivement !", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+    relative: [
+      {t:800, text:"C'est moi... j'ai eu un accident, j'ai besoin d'argent tout de suite.", delta:20, cls:"flag-warn", flagKey:"urgency"},
+      {t:2500, text:"Ne dis rien à maman, je ne veux pas l'inquiéter, s'il te plaît.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"Il faut que tu m'envoies de l'argent sur ce compte maintenant.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"Fais vite, je vais avoir de gros ennuis si tu n'envoies pas tout de suite !", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+  },
+  en: {
+    bank: [
+      {t:800, text:"Hello! This is your bank's security team.", delta:15, cls:"flag-warn", flagKey:"authority"},
+      {t:2500, text:"We detected a suspicious transaction on your card.", delta:10, cls:"", flagKey:"authority"},
+      {t:2500, text:"To cancel it, give me the code you're about to receive by SMS.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"Please don't tell anyone about this call — it's confidential.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"If you don't hurry, your funds will be blocked permanently!", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+    relative: [
+      {t:800, text:"It's me... I had an accident, I need money right now.", delta:20, cls:"flag-warn", flagKey:"urgency"},
+      {t:2500, text:"Please don't tell mom, I don't want to worry her.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"You need to send money to this account right now.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"Hurry, I'll be in big trouble if you don't send it immediately!", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+  },
+  ru: {
+    bank: [
+      {t:800, text:"Здравствуйте! Это служба безопасности банка.", delta:15, cls:"flag-warn", flagKey:"authority"},
+      {t:2500, text:"Мы зафиксировали подозрительную операцию по вашей карте.", delta:10, cls:"", flagKey:"authority"},
+      {t:2500, text:"Чтобы отменить операцию, назовите код из смс, который сейчас придёт.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"Пожалуйста, никому не говорите об этом звонке — это конфиденциально.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"Если не поторопитесь, все средства будут заблокированы навсегда!", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+    relative: [
+      {t:800, text:"Это я... я попал в аварию, мне срочно нужны деньги.", delta:20, cls:"flag-warn", flagKey:"urgency"},
+      {t:2500, text:"Не говори маме, я не хочу её волновать, пожалуйста.", delta:25, cls:"flag", flagKey:"secrecy"},
+      {t:2500, text:"Переведи мне деньги на этот счёт прямо сейчас.", delta:35, cls:"flag", flagKey:"transfer"},
+      {t:2500, text:"Поторопись, у меня будут большие проблемы, если не переведёшь немедленно!", delta:20, cls:"flag", flagKey:"urgency"},
+    ],
+  },
+};
+
+/* ===== Call simulation state ===== */
+let score = 0, timer = 0, timerInterval = null, running = false;
+const usedFlags = new Set();
+let history = [];
+let contacts = [];
+
+const gaugeArc = () => el('gaugeArc');
+const ARC_LEN = 188.4;
+
+function buildWaveform(){
+  const wf = el('waveform');
+  wf.innerHTML = "";
+  for(let i=0;i<24;i++){
+    const bar = document.createElement('div');
+    bar.className = "bar";
+    wf.appendChild(bar);
+  }
+}
+let waveInterval = null;
+function animateWaveform(active){
+  clearInterval(waveInterval);
+  const bars = document.querySelectorAll('#waveform .bar');
+  if(!active){
+    bars.forEach(b=>{ b.style.height="5px"; b.style.background = "#252D3D"; });
+    return;
+  }
+  waveInterval = setInterval(()=>{
+    bars.forEach(b=>{
+      const h = 4 + Math.random()*22;
+      b.style.height = h+"px";
+      b.style.background = "var(--brand)";
+    });
+  }, 140);
+}
+
+function setGauge(pct){
+  const offset = ARC_LEN - (ARC_LEN * pct/100);
+  const arc = gaugeArc();
+  arc.style.transition = "stroke-dashoffset .5s ease, stroke .3s";
+  arc.style.strokeDashoffset = offset;
+  let color = "#34D399", wordKey="riskCalm";
+  if(pct >= 70){color="#FF5C5C"; wordKey="riskDanger";}
+  else if(pct >= 30){color="#FBBF24"; wordKey="riskCaution";}
+  arc.style.stroke = color;
+  el('riskNum').style.color = color;
+  el('riskWord').style.color = color;
+  el('riskNum').textContent = Math.round(pct)+"%";
+  el('riskWord').textContent = t(wordKey);
+  el('riskWord').setAttribute('data-i18n', wordKey);
+
+  const banner = el('banner');
+  banner.className = "banner";
+  if(pct >= 70){
+    banner.classList.add("show","danger");
+    banner.textContent = t("bannerDanger");
+    showTrustedContactToast();
+  } else if(pct >= 30){
+    banner.classList.add("show","warn");
+    banner.textContent = t("bannerWarn");
+  } else {
+    banner.classList.remove("show");
+    el('toast').classList.remove('show');
+  }
+  if(pct >= 30){ el('codewordBtn').disabled = false; }
+}
+
+let toastShown = false;
+function showTrustedContactToast(){
+  if(toastShown) return;
+  toastShown = true;
+  const toast = el('toast');
+  const msg = contacts.length
+    ? t("toastNotified").replace("{name}", contacts[0].name)
+    : t("toastNotifiedGeneric");
+  toast.textContent = msg;
+  toast.classList.add('show');
+}
+
+function addLine(speaker, text, cls){
+  const line = document.createElement('div');
+  line.className = "line " + (cls||"");
+  line.innerHTML = `<span class="tag">${speaker}:</span>${text}`;
+  el('transcript').appendChild(line);
+  el('transcript').scrollTop = el('transcript').scrollHeight;
+}
+
+function resetDemo(){
+  running = false;
+  clearInterval(timerInterval);
+  animateWaveform(false);
+  score = 0; timer = 0; usedFlags.clear(); toastShown = false;
+  setGauge(0);
+  el('transcript').innerHTML = "";
+  el('banner').className = "banner";
+  el('toast').classList.remove('show');
+  el('callTimer').textContent = "00:00";
+  const ci = CALLER_INFO[currentLang][currentScenario];
+  el('callerName').textContent = t("callerDefault");
+  el('callerName').setAttribute('data-i18n','callerDefault');
+  el('callerSub').textContent = "—";
+  el('avatarLetter').textContent = "?";
+  el('codewordBtn').disabled = true;
+  el('startBtn').disabled = false;
+  el('debrief').classList.remove('show');
+  el('debriefList').innerHTML = "";
+}
+
+function runCall(){
+  if(running) return;
+  resetDemo();
+  running = true;
+  el('startBtn').disabled = true;
+  const ci = CALLER_INFO[currentLang][currentScenario];
+  el('callerName').textContent = ci.name;
+  el('callerName').removeAttribute('data-i18n');
+  el('callerSub').textContent = ci.sub;
+  el('avatarLetter').textContent = ci.emo;
+  animateWaveform(true);
+
+  timerInterval = setInterval(()=>{
+    timer++;
+    const m = String(Math.floor(timer/60)).padStart(2,'0');
+    const s = String(timer%60).padStart(2,'0');
+    el('callTimer').textContent = `${m}:${s}`;
+  },1000);
+
+  const scriptArr = SCRIPTS[currentLang][currentScenario];
+  const speaker = SPEAKER[currentLang];
+  let delay = 400;
+  scriptArr.forEach((line, i)=>{
+    delay += line.t;
+    setTimeout(()=>{
+      addLine(speaker, line.text, line.cls);
+      score = Math.min(100, score + line.delta);
+      setGauge(score);
+      if(line.flagKey) usedFlags.add(line.flagKey);
+      if(i === scriptArr.length - 1){
+        setTimeout(()=>{ animateWaveform(false); showDebrief(); }, 900);
+      }
+    }, delay);
+  });
+}
+
+function showDebrief(){
+  running = false;
+  el('startBtn').disabled = false;
+  el('debrief').classList.add('show');
+  const list = el('debriefList');
+  list.innerHTML = "";
+  const labelKeys = { authority:"flagAuthorityLabel", transfer:"flagCredentialsLabel", secrecy:"flagSecrecyLabel", urgency:"flagUrgencyLabel" };
+  const descKeys = { authority:"debriefAuthority", transfer:"debriefTransfer", secrecy:"debriefSecrecy", urgency:"debriefUrgency" };
+  usedFlags.forEach(key=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${t(labelKeys[key])}:</b> ${t(descKeys[key])}`;
+    list.appendChild(li);
+  });
+  history.unshift({ time: new Date(), scenario: currentScenario, score });
+  renderHistory();
+}
+
+function renderHistory(){
+  const wrap = el('historyList');
+  if(history.length === 0){
+    wrap.innerHTML = `<div class="history-empty">${t("historyEmpty")}</div>`;
+    return;
+  }
+  wrap.innerHTML = "";
+  history.forEach(h=>{
+    let cls = "safe", verdictKey = "hVerdictSafe";
+    if(h.score >= 70){cls="danger"; verdictKey="hVerdictDanger";}
+    else if(h.score >= 30){cls="warn"; verdictKey="hVerdictWarn";}
+    const scenarioKey = h.scenario === "bank" ? "hScenarioBank" : "hScenarioRelative";
+    const row = document.createElement('div');
+    row.className = "history-row " + cls;
+    const hh = String(h.time.getHours()).padStart(2,'0');
+    const mm = String(h.time.getMinutes()).padStart(2,'0');
+    row.innerHTML = `
+      <div class="h-score" style="color:${cls==='danger'?'#FF5C5C':cls==='warn'?'#FBBF24':'#34D399'}">${h.score}%</div>
+      <div class="h-body">
+        <div class="h-title">${t(verdictKey)}</div>
+        <div class="h-sub">${t(scenarioKey)} · ${hh}:${mm}</div>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+
+el('clearHistoryBtn').addEventListener('click', ()=>{ history = []; renderHistory(); });
+
+el('codewordBtn').addEventListener('click', ()=>{
+  const speaker = SPEAKER[currentLang];
+  const askText = { fr:"Demandez à votre interlocuteur le mot de code familial.", en:"Ask your caller for the family code word.", ru:"Попросите собеседника назвать кодовое слово семьи." };
+  const failText = { fr:"Euh... quel mot ? Je n'ai pas le temps, c'est urgent !", en:"Uh... what word? I don't have time, it's urgent!", ru:"Э-э... какое слово? У меня нет времени, это срочно!" };
+  addLine("VoiceGuard", askText[currentLang], "flag-warn");
+  addLine(speaker, failText[currentLang], "flag");
+  score = 100;
+  setGauge(score);
+  el('codewordBtn').disabled = true;
+});
+
+el('startBtn').addEventListener('click', runCall);
+el('resetBtn').addEventListener('click', resetDemo);
+
+document.querySelectorAll('.scenario-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentScenario = btn.dataset.scenario;
+    resetDemo();
+  });
+});
+
+/* ===== Trusted contacts ===== */
+function renderContacts(){
+  const wrap = el('contactList');
+  if(contacts.length === 0){
+    wrap.innerHTML = `<div class="contact-empty">${t("contactEmpty")}</div>`;
+    return;
+  }
+  wrap.innerHTML = "";
+  contacts.forEach((c,i)=>{
+    const chip = document.createElement('div');
+    chip.className = "contact-chip";
+    const initials = c.name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();
+    chip.innerHTML = `
+      <div class="c-avatar">${initials}</div>
+      <div class="c-info"><div class="c-name">${c.name}</div><div class="c-phone">${c.phone||"—"}</div></div>
+      <button class="c-remove" data-idx="${i}" title="${t('contactRemove')}">✕</button>`;
+    wrap.appendChild(chip);
+  });
+  wrap.querySelectorAll('.c-remove').forEach(b=>{
+    b.addEventListener('click', ()=>{ contacts.splice(Number(b.dataset.idx),1); renderContacts(); });
+  });
+}
+el('addContactBtn').addEventListener('click', ()=>{
+  const name = el('contactName').value.trim();
+  const phone = el('contactPhone').value.trim();
+  if(!name) return;
+  contacts.push({name, phone});
+  el('contactName').value = ""; el('contactPhone').value = "";
+  renderContacts();
+});
+
+/* ===== Text analyzer (multilingual patterns) ===== */
+const PATTERNS = [
+  { key:"urgency", weight:28, regexes:[
+      /urgent\w*|imm[ée]diat\w*|tout de suite|au plus vite|dans\s*\d+\s*minutes|bloqu\w*|d[ée]finitivement|dernière chance|vite/gi,
+      /urgent\w*|immediately|right (now|away)|as soon as possible|within\s*\d+\s*minutes|hurry|block(ed)?|permanently|last chance/gi,
+      /срочно|немедленно|сейчас же|как можно скорее|через\s*\d+\s*минут|заблокир\w*|навсегда|последний шанс|поторопит\w*/gi
+  ]},
+  { key:"secrecy", weight:26, regexes:[
+      /n['’]en parlez à personne|ne dites (rien|à personne)|c['’]est (confidentiel|secret)|ne raccrochez pas|garder le secret/gi,
+      /don't tell (anyone|anybody)|do not tell|this is confidential|it's a secret|don't hang up|keep (this|it) (a )?secret/gi,
+      /никому не (говорите|рассказывайте|сообщайте)|это (секрет|конфиденциально)|не кладите трубку|не вешайте трубку/gi
+  ]},
+  { key:"authority", weight:20, regexes:[
+      /s[ée]curit[ée] (de (la|votre|ma) banque|bancaire)|employ[ée] de (la |votre )?banque|de la part de (la |votre )?banque|police|gendarmerie|tr[ée]sor public|impôts|équipe de sécurité/gi,
+      /bank('s)? security( team)?|security (team|department) (of|from|at) (the |your )?bank|bank employee|on behalf of (the |your )?bank|calling from (the |your )?bank|police( department)?|law enforcement|federal|government agency|central bank|fraud (department|team)/gi,
+      /служба безопасности|сотрудник банка|из банка|полиция|следовател\w*|прокуратур\w*|госорган\w*|центральный банк/gi
+  ]},
+  { key:"credentials", weight:34, regexes:[
+      /code (reçu par )?sms|code de v[ée]rification|cvv|mot de passe|num[ée]ro de carte|date d['’]expiration|virement|transf[ée]rez|envoyez l['’]argent/gi,
+      /(sms|text)( message)? code|code (sent|received|you('re|'ll)? (about to )?receiv\w*) (by|via|through) (sms|text)|verification code|security code|cvv|password|pin( code)?|card number|expiration date|wire( the)? money|transfer( the)? money|send money|bank details/gi,
+      /код из см[сc]|смс[- ]код|cvv|пароль от|номер карты|срок действия карты|перевед\w+ (деньги|средства)|переведите/gi
+  ]},
+];
+
+function analyzeText(text){
+  const hits = [];
+  let total = 0;
+  PATTERNS.forEach(p=>{
+    let allMatches = [];
+    p.regexes.forEach(re=>{
+      const m = text.match(re);
+      if(m) allMatches = allMatches.concat(m);
+    });
+    if(allMatches.length){
+      const uniq = [...new Set(allMatches.map(m=>m.toLowerCase()))];
+      total += p.weight;
+      hits.push({ key:p.key, examples: uniq.slice(0,3) });
+    }
+  });
+  return { score: Math.min(100,total), hits };
+}
+
+const labelKeyMap = { urgency:"flagUrgencyLabel", secrecy:"flagSecrecyLabel", authority:"flagAuthorityLabel", credentials:"flagCredentialsLabel" };
+
+function renderResult(res, textLen){
+  const card = el('resultCard');
+  if(textLen === 0){
+    card.innerHTML = `<div class="result-empty">${t("resultEmpty")}</div>`;
+    return;
+  }
+  let color = "#34D399", verdictKey="verdictSafe", subKey="subSafe";
+  if(res.score >= 70){color="#FF5C5C"; verdictKey="verdictDanger"; subKey="subDanger";}
+  else if(res.score >= 30){color="#FBBF24"; verdictKey="verdictWarn"; subKey="subWarn";}
+
+  const circumference = 2*Math.PI*32;
+  const offset = circumference - (circumference*res.score/100);
+
+  let flagsHtml = PATTERNS.map(p=>{
+    const hit = res.hits.find(h=>h.key===p.key);
+    return `<div class="flag-item ${hit?'hit':''}">
+      <div class="icon">${hit?'⚠':'○'}</div>
+      <div class="body">
+        <b style="color:${hit?'#FF5C5C':'#8A93A6'}">${t(labelKeyMap[p.key])}</b>
+        <span>${hit? t('detected')+': «'+hit.examples.join('», «')+'»' : t('notDetected')}</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  card.innerHTML = `
+    <div class="result-top">
+      <div class="score-ring">
+        <svg viewBox="0 0 78 78">
+          <circle cx="39" cy="39" r="32" fill="none" stroke="#252D3D" stroke-width="8"/>
+          <circle cx="39" cy="39" r="32" fill="none" stroke="${color}" stroke-width="8"
+            stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+        </svg>
+        <div class="num" style="color:${color}">${res.score}%</div>
+      </div>
+      <div>
+        <div class="result-verdict" style="color:${color}">${t(verdictKey)}</div>
+        <div class="result-sub">${t(subKey)} · ${res.hits.length}/${PATTERNS.length} ${t('signalsOf')}</div>
+      </div>
+    </div>
+    <div class="flags">${flagsHtml}</div>`;
+}
+
+const SAMPLES = {
+  fr: {
+    scam: "Bonjour, ici la sécurité de votre banque. Une opération suspecte a été détectée, donnez-moi le code reçu par SMS de toute urgence sinon votre compte sera bloqué définitivement. N'en parlez à personne.",
+    courier: "Bonjour, je suis le livreur, j'arrive avec votre colis dans 15 minutes, l'interphone ne fonctionne pas, pouvez-vous m'indiquer comment accéder à la cour ?",
+    safe: "Coucou, c'est moi, je vais arriver un peu en retard, je suis coincé dans les embouteillages. Achète du pain en rentrant s'il te plaît."
+  },
+  en: {
+    scam: "Hello, this is your bank's security team. A suspicious transaction was detected, give me the code you received by SMS urgently or your account will be blocked permanently. Don't tell anyone.",
+    courier: "Hi, I'm the delivery courier, I'll arrive with your package in 15 minutes, the intercom isn't working, can you tell me how to access the yard?",
+    safe: "Hey, it's me, I'll be a bit late, I'm stuck in traffic. Please pick up some bread on your way home if you don't mind."
+  },
+  ru: {
+    scam: "Здравствуйте, это служба безопасности банка. Обнаружена подозрительная операция, срочно назовите код из смс, иначе счёт будет заблокирован навсегда. Никому не говорите об этом.",
+    courier: "Добрый день, я курьер, везу ваш заказ, буду через 15 минут, домофон не работает, подскажите как пройти во двор?",
+    safe: "Привет, это я, буду немного позже, попал в пробку. Купи, пожалуйста, хлеб по дороге домой."
+  }
+};
+
+el('analyzeBtn').addEventListener('click', ()=>{
+  const text = el('userText').value.trim();
+  renderResult(analyzeText(text), text.length);
+});
+document.querySelectorAll('.sample-chip').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const txt = SAMPLES[currentLang][btn.dataset.sample];
+    el('userText').value = txt;
+    renderResult(analyzeText(txt), txt.length);
+  });
+});
+
+/* ===== Code word demo ===== */
+let familyCodeWord = null;
+el('cwSaveBtn').addEventListener('click', ()=>{
+  const val = el('cwSet').value.trim();
+  const out = el('cwSaveResult');
+  if(!val){ out.className="cw-result bad"; out.textContent=t("cwEmptyErr"); return; }
+  familyCodeWord = val.toLowerCase();
+  out.className = "cw-result ok";
+  out.textContent = t("cwSaved");
+});
+el('cwCheckBtn').addEventListener('click', ()=>{
+  const val = el('cwCheck').value.trim().toLowerCase();
+  const out = el('cwCheckResult');
+  if(!familyCodeWord){ out.className="cw-result bad"; out.textContent=t("cwNoWord"); return; }
+  if(val && val === familyCodeWord){ out.className = "cw-result ok"; out.textContent = t("cwMatch"); }
+  else { out.className = "cw-result bad"; out.textContent = t("cwNoMatch"); }
+});
+
+/* ===== Steps rendering ===== */
+function renderSteps(){
+  const wrap = el('stepsList');
+  wrap.innerHTML = "";
+  [1,2,3,4].forEach(n=>{
+    const div = document.createElement('div');
+    div.className = "step";
+    div.innerHTML = `<div class="step-num">0${n}</div><div><h3>${t('step'+n+'Title')}</h3><p>${t('step'+n+'Desc')}</p></div>`;
+    wrap.appendChild(div);
+  });
+}
+
+/* ===== Language application ===== */
+function applyLanguage(lang){
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+
+  document.querySelectorAll('[data-i18n]').forEach(node=>{
+    const key = node.getAttribute('data-i18n');
+    node.textContent = t(key);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(node=>{
+    const key = node.getAttribute('data-i18n-ph');
+    node.setAttribute('placeholder', t(key));
+  });
+  el('heroTitle').innerHTML = t('heroTitle');
+  el('footerText').textContent = t('footer');
+
+  renderSteps();
+  renderHistory();
+  renderContacts();
+
+  // reset live call UI text without wiping history/contacts
+  if(!running){
+    el('callerName').textContent = t("callerDefault");
+    el('callerName').setAttribute('data-i18n','callerDefault');
+  }
+  const analyzed = el('userText').value.trim();
+  if(analyzed){
+    renderResult(analyzeText(analyzed), analyzed.length);
+  } else {
+    renderResult({score:0,hits:[]}, 0);
+  }
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> applyLanguage(btn.dataset.lang));
+});
+
+/* ===== Init ===== */
+buildWaveform();
+animateWaveform(false);
+setGauge(0);
+applyLanguage("ru");
+renderHistory();
+renderContacts();
+</script>
+
+</body>
+</html>
