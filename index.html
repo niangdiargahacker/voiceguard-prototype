@@ -241,19 +241,6 @@
   .debrief ul{margin:0; padding-left:18px; color:var(--muted); font-size:13px;}
   .debrief li{margin-bottom:8px;}
   .debrief li b{color:var(--text);}
-  /* email recap capture */
-  .report{margin-top:16px; padding-top:14px; border-top:1px solid var(--hairline);}
-  .report label{display:block; font-size:11px; color:var(--muted); margin-bottom:8px; font-family:'JetBrains Mono',monospace; letter-spacing:.06em; text-transform:uppercase;}
-  .report-row{display:flex; gap:8px; flex-wrap:wrap;}
-  .report-row input{flex:1; min-width:160px; padding:10px 12px; border-radius:9px; border:1px solid var(--hairline-2); background:var(--surface-2); color:var(--text); font-size:13px; font-family:'Inter',sans-serif; transition:border-color .15s, box-shadow .15s;}
-  .report-row input:hover{border-color:var(--muted);}
-  .report-row input:focus{outline:none; border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-dim);}
-  .report-row button{padding:10px 16px; border-radius:9px; border:none; background:var(--brand); color:#04241A; font-weight:700; font-size:12.5px; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap; transition:filter .15s;}
-  .report-row button:hover:not(:disabled){filter:brightness(1.08);}
-  .report-row button:disabled{opacity:.5; cursor:not-allowed;}
-  .report-status{margin-top:9px; font-size:12px; font-family:'JetBrains Mono',monospace; min-height:16px;}
-  .report-status.ok{color:var(--safe);}
-  .report-status.bad{color:var(--danger);}
 
   /* ============ CONTENT BLOCKS ============ */
   section.block{padding:var(--s6) 0 var(--s8); border-top:1px solid var(--hairline); position:relative;}
@@ -478,14 +465,6 @@
       <div class="debrief" id="debrief">
         <h4 data-i18n="debriefTitle">Bilan de l'appel</h4>
         <ul id="debriefList"></ul>
-        <div class="report">
-          <label for="reportEmail" data-i18n="reportTitle">Recevoir ce bilan par email</label>
-          <div class="report-row">
-            <input type="email" id="reportEmail" data-i18n-ph="reportPlaceholder" placeholder="votre@email.com" autocomplete="email" inputmode="email">
-            <button id="sendReportBtn" data-i18n="reportBtn">Envoyer le récap</button>
-          </div>
-          <div class="report-status" id="reportStatus" role="status" aria-live="polite"></div>
-        </div>
       </div>
     </div>
 
@@ -713,24 +692,6 @@ const I18N = {
     step3Title: "Le mot de code comme vérification", step3Desc: "En cas de risque élevé, l'appli suggère de demander le mot de code familial.",
     step4Title: "Le bilan après l'appel", step4Desc: "Une explication claire de ce qui a alerté le système — couche pédagogique, pas la base du produit.",
     debriefTitle: "Bilan de l'appel",
-    reportTitle: "Recevoir ce bilan par email",
-    reportPlaceholder: "votre@email.com",
-    reportBtn: "Envoyer le récap",
-    reportSending: "Envoi en cours…",
-    reportSent: "Demande envoyée — vérifiez votre boîte (et les spams).",
-    reportErr: "Échec de l'envoi. Réessayez plus tard.",
-    reportInvalid: "Entrez une adresse email valide.",
-    reportNoConfig: "Envoi email non configuré (voir README).",
-    emailSubject: "VoiceGuard — les signaux de fraude repérés pendant l'appel",
-    emailIntro: "Voici les signaux de manipulation détectés pendant l'appel simulé :",
-    emailNone: "Aucun signal de fraude n'a été détecté sur cet appel.",
-    emailOutro: "Rappel : une banque ne demande jamais votre code par téléphone. En cas de doute, raccrochez et rappelez le numéro officiel figurant au dos de votre carte.",
-    leadSubject: "VoiceGuard — nouveau test : {email}",
-    leadIntro: "Un visiteur a testé VoiceGuard et demandé son récap.",
-    leadFieldEmail: "Email",
-    leadFieldScenario: "Scénario",
-    leadFieldScore: "Taux d'attaque",
-    leadFieldTime: "Heure",
     historyEyebrow: "Historique de session",
     historyTitle: "Appels analysés",
     historyDesc: "Chaque appel simulé est enregistré ici, comme dans le vrai journal de l'application.",
@@ -817,24 +778,6 @@ const I18N = {
     step3Title: "The code word as a check", step3Desc: "At high risk, the app suggests asking for the family code word.",
     step4Title: "The post-call debrief", step4Desc: "A clear explanation of what triggered the alert — a learning layer, not the product's core.",
     debriefTitle: "Call debrief",
-    reportTitle: "Get this debrief by email",
-    reportPlaceholder: "you@email.com",
-    reportBtn: "Email me the recap",
-    reportSending: "Sending…",
-    reportSent: "Request sent — check your inbox (and spam).",
-    reportErr: "Sending failed. Try again later.",
-    reportInvalid: "Enter a valid email address.",
-    reportNoConfig: "Email sending not configured (see README).",
-    emailSubject: "VoiceGuard — the fraud signals spotted during the call",
-    emailIntro: "Here are the manipulation signals detected during the simulated call:",
-    emailNone: "No fraud signals were detected on this call.",
-    emailOutro: "Reminder: a bank never asks for your code over the phone. When in doubt, hang up and call back the official number on the back of your card.",
-    leadSubject: "VoiceGuard — new test: {email}",
-    leadIntro: "A visitor tested VoiceGuard and requested their recap.",
-    leadFieldEmail: "Email",
-    leadFieldScenario: "Scenario",
-    leadFieldScore: "Attack rate",
-    leadFieldTime: "Time",
     historyEyebrow: "Session history",
     historyTitle: "Analyzed calls",
     historyDesc: "Every simulated call is logged here, like a real app's call history.",
@@ -921,24 +864,6 @@ const I18N = {
     step3Title: "Кодовое слово как проверка", step3Desc: "При высоком риске приложение предлагает спросить кодовое слово семьи.",
     step4Title: "Разбор после звонка", step4Desc: "Понятное объяснение, что насторожило систему — обучающий слой, а не основа продукта.",
     debriefTitle: "Разбор звонка",
-    reportTitle: "Получить разбор на email",
-    reportPlaceholder: "vash@email.com",
-    reportBtn: "Прислать сводку",
-    reportSending: "Отправка…",
-    reportSent: "Запрос отправлен — проверьте почту (и спам).",
-    reportErr: "Не удалось отправить. Попробуйте позже.",
-    reportInvalid: "Введите корректный адрес email.",
-    reportNoConfig: "Отправка email не настроена (см. README).",
-    emailSubject: "VoiceGuard — признаки мошенничества, замеченные во время звонка",
-    emailIntro: "Вот признаки манипуляции, обнаруженные во время смоделированного звонка:",
-    emailNone: "На этом звонке признаков мошенничества не обнаружено.",
-    emailOutro: "Напоминание: банк никогда не спрашивает код по телефону. Если сомневаетесь — положите трубку и перезвоните по официальному номеру на обороте карты.",
-    leadSubject: "VoiceGuard — новый тест: {email}",
-    leadIntro: "Посетитель протестировал VoiceGuard и запросил разбор.",
-    leadFieldEmail: "Email",
-    leadFieldScenario: "Сценарий",
-    leadFieldScore: "Уровень риска",
-    leadFieldTime: "Время",
     historyEyebrow: "История сессии",
     historyTitle: "Проанализированные звонки",
     historyDesc: "Каждый смоделированный звонок сохраняется здесь — как в настоящем журнале приложения.",
@@ -1512,90 +1437,6 @@ renderContacts();
     entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, {threshold:.12, rootMargin:"0px 0px -8% 0px"});
   document.querySelectorAll('[data-reveal]').forEach(n=>io.observe(n));
-})();
-</script>
-
-<script>
-/* ===== Email recap + lead notification via Google Apps Script (additive — ne touche pas la logique de détection) =====
-   - L'utilisateur testé reçoit son récap : taux d'attaque (score), verdict, scénario, signaux détectés.
-   - BRO_EMAIL (si renseigné) reçoit une alerte "prospect" à chaque envoi : email du visiteur + ses résultats. */
-const VOICEGUARD_MAIL = {
-  GAS_URL: "",   /* <-- coller ici l'URL du Web App Apps Script (voir README) */
-  BRO_EMAIL: ""  /* <-- adresse qui reçoit une alerte prospect à chaque test envoyé */
-};
-(function(){
-  const btn = document.getElementById('sendReportBtn');
-  if(!btn) return;
-  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  const L = { authority:"flagAuthorityLabel", transfer:"flagCredentialsLabel", secrecy:"flagSecrecyLabel", urgency:"flagUrgencyLabel" };
-  const D = { authority:"debriefAuthority", transfer:"debriefTransfer", secrecy:"debriefSecrecy", urgency:"debriefUrgency" };
-  function verdictInfo(){
-    if(score >= 70) return { key:"hVerdictDanger", color:"#FF5C5C" };
-    if(score >= 30) return { key:"hVerdictWarn", color:"#FBBF24" };
-    return { key:"hVerdictSafe", color:"#34D399" };
-  }
-  function scenarioLabel(){ return t(currentScenario === "bank" ? "hScenarioBank" : "hScenarioRelative"); }
-  function flagsHtml(){
-    const flags = [...usedFlags];
-    return flags.length
-      ? "<ul style='margin:0;padding-left:18px'>" + flags.map(k=>`<li style="margin:0 0 8px"><b>${t(L[k])}</b> — ${t(D[k])}</li>`).join("") + "</ul>"
-      : `<p style="margin:0">${t('emailNone')}</p>`;
-  }
-  function scoreChipHtml(v){
-    return `<div style="display:inline-block;padding:10px 18px;border-radius:12px;background:#f2f4f8;margin:4px 0 16px">
-      <span style="font-size:30px;font-weight:800;color:${v.color}">${score}%</span>
-      <span style="margin-left:10px;font-weight:700;color:${v.color}">${t(v.key)}</span>
-    </div>`;
-  }
-  function userHtml(){
-    const v = verdictInfo();
-    return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0d1117;max-width:560px;line-height:1.5">
-      <h2 style="margin:0 0 4px">VoiceGuard</h2>
-      <p style="margin:0 0 14px;color:#5a6b7a">${t('emailIntro')}</p>
-      ${scoreChipHtml(v)}
-      <p style="margin:0 0 12px;color:#5a6b7a;font-size:13px">${scenarioLabel()}</p>
-      ${flagsHtml()}
-      <p style="margin-top:16px">${t('emailOutro')}</p>
-      <p style="margin-top:20px;color:#98a2b3;font-size:12px">VoiceGuard — prototype.</p>
-    </div>`;
-  }
-  function leadHtml(userEmail){
-    const v = verdictInfo();
-    const now = new Date();
-    return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0d1117;max-width:560px;line-height:1.5">
-      <h2 style="margin:0 0 4px">VoiceGuard</h2>
-      <p style="margin:0 0 14px;color:#5a6b7a">${t('leadIntro')}</p>
-      <table style="border-collapse:collapse;font-size:13px;margin-bottom:14px">
-        <tr><td style="padding:4px 14px 4px 0;color:#5a6b7a">${t('leadFieldEmail')}</td><td style="padding:4px 0"><b>${userEmail}</b></td></tr>
-        <tr><td style="padding:4px 14px 4px 0;color:#5a6b7a">${t('leadFieldScenario')}</td><td style="padding:4px 0">${scenarioLabel()}</td></tr>
-        <tr><td style="padding:4px 14px 4px 0;color:#5a6b7a">${t('leadFieldScore')}</td><td style="padding:4px 0"><b style="color:${v.color}">${score}% · ${t(v.key)}</b></td></tr>
-        <tr><td style="padding:4px 14px 4px 0;color:#5a6b7a">${t('leadFieldTime')}</td><td style="padding:4px 0">${now.toLocaleString(currentLang)}</td></tr>
-      </table>
-      ${flagsHtml()}
-    </div>`;
-  }
-  btn.addEventListener('click', async ()=>{
-    const status = document.getElementById('reportStatus');
-    const input = document.getElementById('reportEmail');
-    const email = input.value.trim();
-    if(!emailOk(email)){ status.className="report-status bad"; status.textContent=t('reportInvalid'); return; }
-    if(!VOICEGUARD_MAIL.GAS_URL){ status.className="report-status bad"; status.textContent=t('reportNoConfig'); return; }
-    status.className="report-status"; status.textContent=t('reportSending'); btn.disabled=true;
-    try{
-      await fetch(VOICEGUARD_MAIL.GAS_URL, {
-        method:"POST", mode:"no-cors",
-        headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body: JSON.stringify({
-          to: email, subject: t('emailSubject'), body: userHtml(),
-          lead: VOICEGUARD_MAIL.BRO_EMAIL ? { to: VOICEGUARD_MAIL.BRO_EMAIL, subject: t('leadSubject').replace('{email}', email), body: leadHtml(email) } : null
-        })
-      });
-      status.className="report-status ok"; status.textContent=t('reportSent'); input.value="";
-    }catch(err){
-      status.className="report-status bad"; status.textContent=t('reportErr');
-    }
-    btn.disabled=false;
-  });
 })();
 </script>
 

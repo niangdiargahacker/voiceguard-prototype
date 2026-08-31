@@ -8,7 +8,7 @@ VoiceGuard est un outil qui analyse en temps réel les appels téléphoniques su
 
 ## Fichier
 
-Tout est dans **`voiceguard_final.html`** — un seul fichier autonome (HTML + CSS + JS), aucune installation nécessaire. Double-cliquer dessus l'ouvre dans n'importe quel navigateur.
+Tout est dans **`index.html`** — un seul fichier autonome (HTML + CSS + JS), aucune installation nécessaire. Double-cliquer dessus l'ouvre dans n'importe quel navigateur.
 
 ## Fonctionnalités déjà implémentées (fonctionnelles, pas juste visuelles)
 
@@ -30,20 +30,6 @@ Le contenu, la logique JS et les textes (3 langues) sont **finalisés et ne doiv
 - Le mockup de téléphone peut être repensé visuellement
 
 Toutes les couleurs sont en variables CSS (`:root`) en haut du fichier — facile à retravailler sans toucher au reste.
-
-## Recevoir le bilan par email + alerte prospect (optionnel)
-
-Après un appel simulé, l'utilisateur peut entrer son email dans le bilan pour recevoir son récap : **taux d'attaque (score)**, verdict, scénario et signaux de fraude détectés. En parallèle, chaque envoi déclenche une **alerte prospect** vers l'équipe : l'email du visiteur + ses résultats. Les deux emails passent par un **Google Apps Script** gratuit (`MailApp.sendEmail`).
-
-Mise en place (5 min) : suivre les étapes en tête de [`google-apps-script.gs`](google-apps-script.gs), puis coller l'URL du Web App dans `voiceguard final.html` :
-
-```js
-const VOICEGUARD_MAIL = { GAS_URL: "https://script.google.com/.../exec", BRO_EMAIL: "bro@email.com" };
-```
-
-- `BRO_EMAIL` = adresse qui reçoit l'alerte prospect (email + score + scénario + signaux) à **chaque** test envoyé. Laisser vide pour désactiver.
-- Fonctionne quand le fichier est **hébergé ou ouvert en local**. Dans l'aperçu Artifact le réseau est bloqué → le bouton affiche une erreur (normal).
-- Tant que `GAS_URL` est vide, le bouton affiche « envoi non configuré » (aucun faux succès).
 
 ## Contact
 
