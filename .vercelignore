@@ -1,0 +1,6 @@
+# Internal notes — never publish
+PROJECT_STATUS.md
+CLAUDE.md
+.claude/
+.opencode/
+agents/
