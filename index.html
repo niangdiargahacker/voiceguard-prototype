@@ -471,7 +471,7 @@
     <div class="monitor">
       <div class="monitor-rail">
         <span class="live-dot" aria-hidden="true"></span>
-        <span class="m-title">LIVE THREAT MONITOR</span>
+        <span class="m-title" data-i18n="monTitle">LIVE THREAT MONITOR</span>
         <span class="m-coord">SES · 2F</span>
       </div>
       <div class="phone">
@@ -488,17 +488,17 @@
             <div class="call-timer" id="callTimer">00:00</div>
           </div>
 
-          <div class="module-cap">SIGNAL ANALYSIS</div>
+          <div class="module-cap" data-i18n="capSignal">SIGNAL ANALYSIS</div>
           <div class="wave-stack">
             <div class="wave-layer l1" aria-hidden="true"></div>
             <div class="wave-layer l2" aria-hidden="true"></div>
             <div class="waveform" id="waveform"></div>
           </div>
           <div class="wave-legend" aria-hidden="true">
-            <span>signal</span><span>voice</span><span>analysis</span><span>risk</span>
+            <span data-i18n="legSignal">signal</span><span data-i18n="legVoice">voice</span><span data-i18n="legAnalysis">analysis</span><span data-i18n="legRisk">risk</span>
           </div>
 
-          <div class="module-cap">THREAT ASSESSMENT</div>
+          <div class="module-cap" data-i18n="capThreat">THREAT ASSESSMENT</div>
           <div class="risk-gauge">
             <svg viewBox="0 0 150 90">
               <defs>
@@ -678,6 +678,10 @@ const I18N = {
     scenarioBank: "Faux banquier",
     scenarioRelative: "Faux proche en détresse",
     statusActive: "●●● VoiceGuard actif",
+    monTitle: "MONITEUR DE MENACES",
+    capSignal: "ANALYSE DU SIGNAL",
+    capThreat: "ÉVALUATION DE LA MENACE",
+    legSignal: "signal", legVoice: "voix", legAnalysis: "analyse", legRisk: "risque",
     callerDefault: "Numéro inconnu",
     riskCalm: "calme", riskCaution: "prudence", riskDanger: "danger",
     bannerWarn: "Vigilance accrue",
@@ -764,6 +768,10 @@ const I18N = {
     scenarioBank: "Fake bank officer",
     scenarioRelative: "Fake relative in distress",
     statusActive: "●●● VoiceGuard active",
+    monTitle: "LIVE THREAT MONITOR",
+    capSignal: "SIGNAL ANALYSIS",
+    capThreat: "THREAT ASSESSMENT",
+    legSignal: "signal", legVoice: "voice", legAnalysis: "analysis", legRisk: "risk",
     callerDefault: "Unknown number",
     riskCalm: "calm", riskCaution: "caution", riskDanger: "danger",
     bannerWarn: "Increased vigilance",
@@ -850,6 +858,10 @@ const I18N = {
     scenarioBank: "Фальшивый банкир",
     scenarioRelative: "Фальшивый близкий в беде",
     statusActive: "●●● VoiceGuard активен",
+    monTitle: "МОНИТОР УГРОЗ",
+    capSignal: "АНАЛИЗ СИГНАЛА",
+    capThreat: "ОЦЕНКА УГРОЗЫ",
+    legSignal: "сигнал", legVoice: "голос", legAnalysis: "анализ", legRisk: "риск",
     callerDefault: "Неизвестный номер",
     riskCalm: "спокойно", riskCaution: "настороже", riskDanger: "опасно",
     bannerWarn: "Повышенная бдительность",
@@ -992,6 +1004,10 @@ const SCRIPTS = {
 
 /* ===== Call simulation state ===== */
 let score = 0, timer = 0, timerInterval = null, running = false;
+/* replay state: lets the UI be rebuilt in another language after the fact */
+let transcriptEvents = []; // ordered transcript beats, replayable in any language
+let callStarted = false;  // a call has begun, so the caller identity is meaningful
+let debriefShown = false;
 const usedFlags = new Set();
 let history = [];
 let contacts = [];
@@ -1057,14 +1073,16 @@ function setGauge(pct){
 }
 
 let toastShown = false;
+function toastMessage(){
+  return contacts.length
+    ? t("toastNotified").replace("{name}", contacts[0].name)
+    : t("toastNotifiedGeneric");
+}
 function showTrustedContactToast(){
   if(toastShown) return;
   toastShown = true;
   const toast = el('toast');
-  const msg = contacts.length
-    ? t("toastNotified").replace("{name}", contacts[0].name)
-    : t("toastNotifiedGeneric");
-  toast.textContent = msg;
+  toast.textContent = toastMessage();
   toast.classList.add('show');
 }
 
@@ -1076,21 +1094,72 @@ function addLine(speaker, text, cls){
   el('transcript').scrollTop = el('transcript').scrollHeight;
 }
 
+/* The code-word exchange, kept beside the call scripts so a language switch
+   can rebuild it like any other transcript beat. */
+const CODEWORD_LINES = {
+  ask:  { fr:"Demandez à votre interlocuteur le mot de code familial.", en:"Ask your caller for the family code word.", ru:"Попросите собеседника назвать кодовое слово семьи." },
+  fail: { fr:"Euh... quel mot ? Je n'ai pas le temps, c'est urgent !", en:"Uh... what word? I don't have time, it's urgent!", ru:"Э-э... какое слово? У меня нет времени, это срочно!" }
+};
+
+/* Rebuild the transcript from the beats already played, in the current language.
+   The scripts are index-aligned across fr/en/ru, so an index means the same beat
+   in every language. Used on language switch only — during a call addLine()
+   appends a single line so the others don't re-animate. */
+function renderTranscript(){
+  const box = el('transcript');
+  box.innerHTML = "";
+  const arr = SCRIPTS[currentLang][currentScenario] || [];
+  const speaker = SPEAKER[currentLang];
+  transcriptEvents.forEach(ev=>{
+    if(ev.type === "codeword"){
+      addLine("VoiceGuard", CODEWORD_LINES.ask[currentLang], "flag-warn");
+      addLine(speaker, CODEWORD_LINES.fail[currentLang], "flag");
+      return;
+    }
+    const line = arr[ev.i];
+    if(line) addLine(speaker, line.text, line.cls);
+  });
+}
+
+function renderCaller(){
+  if(!callStarted){
+    el('callerName').textContent = t("callerDefault");
+    el('callerName').setAttribute('data-i18n','callerDefault');
+    el('callerSub').textContent = "—";
+    el('avatarLetter').textContent = "?";
+    return;
+  }
+  const ci = CALLER_INFO[currentLang][currentScenario];
+  el('callerName').textContent = ci.name;
+  el('callerName').removeAttribute('data-i18n');
+  el('callerSub').textContent = ci.sub;
+  el('avatarLetter').textContent = ci.emo;
+}
+
+function renderDebrief(){
+  const list = el('debriefList');
+  list.innerHTML = "";
+  const labelKeys = { authority:"flagAuthorityLabel", transfer:"flagCredentialsLabel", secrecy:"flagSecrecyLabel", urgency:"flagUrgencyLabel" };
+  const descKeys = { authority:"debriefAuthority", transfer:"debriefTransfer", secrecy:"debriefSecrecy", urgency:"debriefUrgency" };
+  usedFlags.forEach(key=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${t(labelKeys[key])}:</b> ${t(descKeys[key])}`;
+    list.appendChild(li);
+  });
+}
+
 function resetDemo(){
   running = false;
   clearInterval(timerInterval);
   animateWaveform(false);
   score = 0; timer = 0; usedFlags.clear(); toastShown = false;
+  transcriptEvents = []; callStarted = false; debriefShown = false;
   setGauge(0);
   el('transcript').innerHTML = "";
   el('banner').className = "banner";
   el('toast').classList.remove('show');
   el('callTimer').textContent = "00:00";
-  const ci = CALLER_INFO[currentLang][currentScenario];
-  el('callerName').textContent = t("callerDefault");
-  el('callerName').setAttribute('data-i18n','callerDefault');
-  el('callerSub').textContent = "—";
-  el('avatarLetter').textContent = "?";
+  renderCaller();
   el('codewordBtn').disabled = true;
   el('startBtn').disabled = false;
   el('debrief').classList.remove('show');
@@ -1101,12 +1170,9 @@ function runCall(){
   if(running) return;
   resetDemo();
   running = true;
+  callStarted = true;
   el('startBtn').disabled = true;
-  const ci = CALLER_INFO[currentLang][currentScenario];
-  el('callerName').textContent = ci.name;
-  el('callerName').removeAttribute('data-i18n');
-  el('callerSub').textContent = ci.sub;
-  el('avatarLetter').textContent = ci.emo;
+  renderCaller();
   animateWaveform(true);
 
   timerInterval = setInterval(()=>{
@@ -1122,7 +1188,11 @@ function runCall(){
   scriptArr.forEach((line, i)=>{
     delay += line.t;
     setTimeout(()=>{
-      addLine(speaker, line.text, line.cls);
+      /* resolve the line at fire time, so switching language mid-call
+         speaks the remaining lines in the newly selected language */
+      const cur = (SCRIPTS[currentLang][currentScenario] || [])[i] || line;
+      addLine(SPEAKER[currentLang], cur.text, cur.cls);
+      transcriptEvents.push({type:"script", i});
       score = Math.min(100, score + line.delta);
       setGauge(score);
       if(line.flagKey) usedFlags.add(line.flagKey);
@@ -1136,16 +1206,9 @@ function runCall(){
 function showDebrief(){
   running = false;
   el('startBtn').disabled = false;
+  debriefShown = true;
   el('debrief').classList.add('show');
-  const list = el('debriefList');
-  list.innerHTML = "";
-  const labelKeys = { authority:"flagAuthorityLabel", transfer:"flagCredentialsLabel", secrecy:"flagSecrecyLabel", urgency:"flagUrgencyLabel" };
-  const descKeys = { authority:"debriefAuthority", transfer:"debriefTransfer", secrecy:"debriefSecrecy", urgency:"debriefUrgency" };
-  usedFlags.forEach(key=>{
-    const li = document.createElement('li');
-    li.innerHTML = `<b>${t(labelKeys[key])}:</b> ${t(descKeys[key])}`;
-    list.appendChild(li);
-  });
+  renderDebrief();
   history.unshift({ time: new Date(), scenario: currentScenario, score });
   renderHistory();
 }
@@ -1179,11 +1242,9 @@ function renderHistory(){
 el('clearHistoryBtn').addEventListener('click', ()=>{ history = []; renderHistory(); });
 
 el('codewordBtn').addEventListener('click', ()=>{
-  const speaker = SPEAKER[currentLang];
-  const askText = { fr:"Demandez à votre interlocuteur le mot de code familial.", en:"Ask your caller for the family code word.", ru:"Попросите собеседника назвать кодовое слово семьи." };
-  const failText = { fr:"Euh... quel mot ? Je n'ai pas le temps, c'est urgent !", en:"Uh... what word? I don't have time, it's urgent!", ru:"Э-э... какое слово? У меня нет времени, это срочно!" };
-  addLine("VoiceGuard", askText[currentLang], "flag-warn");
-  addLine(speaker, failText[currentLang], "flag");
+  addLine("VoiceGuard", CODEWORD_LINES.ask[currentLang], "flag-warn");
+  addLine(SPEAKER[currentLang], CODEWORD_LINES.fail[currentLang], "flag");
+  transcriptEvents.push({type:"codeword"});
   score = 100;
   setGauge(score);
   el('codewordBtn').disabled = true;
@@ -1399,11 +1460,14 @@ function applyLanguage(lang){
   renderHistory();
   renderContacts();
 
-  // reset live call UI text without wiping history/contacts
-  if(!running){
-    el('callerName').textContent = t("callerDefault");
-    el('callerName').setAttribute('data-i18n','callerDefault');
-  }
+  /* Re-render everything the call wrote imperatively, so a language switch
+     translates the whole app and not just the static markup. */
+  renderCaller();
+  renderTranscript();
+  if(debriefShown) renderDebrief();
+  setGauge(score);                 // banner text + risk word for the current score
+  const toast = el('toast');
+  if(toast.classList.contains('show')) toast.textContent = toastMessage();
   const analyzed = el('userText').value.trim();
   if(analyzed){
     renderResult(analyzeText(analyzed), analyzed.length);
